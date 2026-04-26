@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-crawler
+  namespace: news-intelligence
+  labels:
+    app: news-crawler
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: news-crawler
+  template:
+    metadata:
+      labels:
+        app: news-crawler
+    spec:
+      containers:
+        - name: crawler
+          image: news-intelligence/api:latest
+          command: ["python", "-m", "backend.crawler.scheduler"]
+          envFrom:
+            - secretRef:
+                name: news-secrets
+            - configMapRef:
+                name: news-config
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          livenessProbe:
+            exec:
+              command: ["python", "-c", "import sys; sys.exit(0)"]
+            initialDelaySeconds: 60
+            periodSeconds: 60
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: news-config
+  namespace: news-intelligence
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  REDIS_URL: "redis://redis:6379/0"
+  CLICKHOUSE_HOST: "clickhouse"
+  NEO4J_URI: "bolt://neo4j:7687"
+  CRAWL_INTERVAL_SECONDS: "300"
+  MAX_CONCURRENT_CRAWLERS: "100"
+  USE_FAISS_LOCAL: "true"
+  S3_BUCKET: "news-raw"
+  AWS_REGION: "us-east-1"

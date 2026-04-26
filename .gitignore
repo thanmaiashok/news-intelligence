@@ -1,0 +1,27 @@
+# Environment
+.env
+.env.local
+
+# Python
+backend/.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Data (persisted locally, not in repo)
+.data/
+.logs/
+
+# Node
+frontend/node_modules/
+frontend/.next/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

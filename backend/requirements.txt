@@ -1,0 +1,45 @@
+# Web Framework
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+pydantic==2.7.1
+pydantic-settings==2.2.1
+
+# Async HTTP
+aiohttp==3.9.5
+aiofiles==23.2.1
+
+# Kafka
+aiokafka==0.10.0
+
+# Database drivers
+asyncpg==0.29.0
+clickhouse-connect==0.7.16
+neo4j==5.20.0
+redis[hiredis]==5.0.4
+aioboto3==12.3.0
+
+# Crawler
+feedparser==6.0.11
+beautifulsoup4==4.12.3
+lxml==5.2.1
+playwright==1.44.0
+python-dateutil==2.9.0
+
+# NLP / AI
+transformers==4.41.0
+torch==2.3.0
+sentence-transformers==3.0.0
+spacy>=3.8.0,<3.9.0
+datasketch==1.6.4
+
+# Vector DB (local FAISS — no cloud needed)
+faiss-cpu==1.8.0
+
+# LLM client — talks to local Ollama via OpenAI-compatible API
+openai==1.30.1
+
+# Utilities
+python-multipart==0.0.9
+httpx==0.27.0
+tenacity==8.3.0
+orjson==3.10.3
