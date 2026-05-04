@@ -119,10 +119,10 @@ cp ../.env.example ../.env
 
 ```bash
 cd backend
-uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
-API docs: http://localhost:8000/docs
+API docs: http://localhost:8001/docs
 
 ### Step 4 — Run crawler scheduler
 
@@ -155,9 +155,43 @@ docker compose up --build
 ```
 
 - Dashboard: http://localhost:3000
-- API: http://localhost:8000
+- API: http://localhost:8001
 - Kafka UI: http://localhost:8080
 - Neo4j: http://localhost:7474
+
+---
+
+## Home Server / Tailscale
+
+No public domain is required. Put the server and your devices on the same
+Tailscale network, then start the project on the server:
+
+```bash
+./start.sh
+```
+
+`start.sh` binds the API and frontend to `0.0.0.0` and auto-detects the
+server's Tailscale IPv4 address when `tailscale` is installed. The startup
+summary prints the URLs to open from your other devices, usually:
+
+```text
+Dashboard: http://100.x.x.x:3000
+API Docs:  http://100.x.x.x:8001/docs
+```
+
+To force a specific hostname or MagicDNS name:
+
+```bash
+SERVER_HOST=spoosh-Aspire-A715-42G ./start.sh
+```
+
+For Docker-only frontend builds, set browser-facing URLs before building:
+
+```bash
+export NEXT_PUBLIC_API_URL=http://100.x.x.x:8001/api/v1
+export NEXT_PUBLIC_WS_URL=ws://100.x.x.x:8001/ws/feed
+docker compose -f deployment/docker/docker-compose.yml up --build
+```
 
 ---
 

@@ -8,6 +8,41 @@ LOG_DIR="$PROJECT_DIR/.logs"
 mkdir -p "$LOG_DIR"
 mkdir -p "$PROJECT_DIR/.data/faiss"
 
+API_PORT="${API_PORT:-8001}"
+FRONTEND_PORT="${FRONTEND_PORT:-3000}"
+BIND_HOST="${BIND_HOST:-0.0.0.0}"
+
+detect_server_host() {
+  if [ -n "${SERVER_HOST:-}" ]; then
+    echo "$SERVER_HOST"
+    return
+  fi
+
+  if command -v tailscale &>/dev/null; then
+    local ts_ip
+    ts_ip="$(tailscale ip -4 2>/dev/null | head -n 1 || true)"
+    if [ -n "$ts_ip" ]; then
+      echo "$ts_ip"
+      return
+    fi
+  fi
+
+  if command -v hostname &>/dev/null; then
+    local lan_ip
+    lan_ip="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
+    if [ -n "$lan_ip" ]; then
+      echo "$lan_ip"
+      return
+    fi
+  fi
+
+  echo "127.0.0.1"
+}
+
+SERVER_HOST="$(detect_server_host)"
+API_BASE_URL="http://${SERVER_HOST}:${API_PORT}/api/v1"
+WS_URL="ws://${SERVER_HOST}:${API_PORT}/ws/feed"
+
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -93,12 +128,12 @@ print('Embedding model ready.')
 " 2>/dev/null || warn "Embedding model pre-warm failed — will download on first use"
 
 # ── 4. Start FastAPI backend ──────────────────────────────────────────────────
-log "Starting FastAPI backend (port 8001)..."
+log "Starting FastAPI backend (${BIND_HOST}:${API_PORT})..."
 cd "$PROJECT_DIR"
 PYTHONPATH="$PROJECT_DIR" "$VENV/bin/uvicorn" \
   backend.api.main:app \
-  --host 127.0.0.1 \
-  --port 8001 \
+  --host "$BIND_HOST" \
+  --port "$API_PORT" \
   --loop uvloop \
   > "$LOG_DIR/api.log" 2>&1 &
 echo $! > "$LOG_DIR/api.pid"
@@ -114,11 +149,11 @@ if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
   cd "$FRONTEND_DIR" && npm install --silent
 fi
 
-log "Starting Next.js frontend (port 3000)..."
+log "Starting Next.js frontend (${BIND_HOST}:${FRONTEND_PORT})..."
 cd "$FRONTEND_DIR"
-NEXT_PUBLIC_API_URL="http://localhost:8001/api/v1" \
-NEXT_PUBLIC_WS_URL="ws://localhost:8001/ws/feed" \
-npm run dev > "$LOG_DIR/frontend.log" 2>&1 &
+NEXT_PUBLIC_API_URL="$API_BASE_URL" \
+NEXT_PUBLIC_WS_URL="$WS_URL" \
+npm run dev -- -H "$BIND_HOST" -p "$FRONTEND_PORT" > "$LOG_DIR/frontend.log" 2>&1 &
 echo $! > "$LOG_DIR/frontend.pid"
 log "Frontend PID: $(cat "$LOG_DIR/frontend.pid") → logs: $LOG_DIR/frontend.log"
 
@@ -127,9 +162,9 @@ echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}  News Intelligence System — RUNNING${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "  Dashboard   →  http://localhost:3000"
-echo -e "  API         →  http://localhost:8001"
-echo -e "  API Docs    →  http://localhost:8001/docs"
+echo -e "  Dashboard   →  http://${SERVER_HOST}:${FRONTEND_PORT}"
+echo -e "  API         →  http://${SERVER_HOST}:${API_PORT}"
+echo -e "  API Docs    →  http://${SERVER_HOST}:${API_PORT}/docs"
 echo -e "  Kafka UI    →  http://localhost:8080"
 echo -e "  Neo4j       →  http://localhost:7474  (neo4j / newspass123)"
 echo -e "  MinIO       →  http://localhost:9001  (minioadmin / minioadmin)"
