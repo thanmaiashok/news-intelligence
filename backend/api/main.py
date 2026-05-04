@@ -77,9 +77,11 @@ async def startup():
     app.state.trends = TrendDetector()
     await app.state.trends.setup()
 
-    # AI — warm embedding model now so first article has no download delay
+    # AI — warm models now so first article has no download delay
     app.state.embedder = EmbeddingService()
     app.state.embedder.warm()
+    from backend.pipeline.sentiment_analyzer import _load_sentiment_pipeline
+    _load_sentiment_pipeline()
     app.state.rag = RAGEngine(app.state.vectors, app.state.embedder)
     app.state.insights = InsightsGenerator()
 
@@ -91,8 +93,15 @@ async def startup():
     )
     await app.state.mystery.setup()
 
-    # Kafka pipeline consumer (background)
+    # Kafka pipeline consumer — share already-connected clients, no duplicate connections
     processor = ArticleProcessor()
+    processor.inject_shared(
+        pg=app.state.postgres,
+        ch=app.state.clickhouse,
+        neo4j=app.state.neo4j,
+        vectors=app.state.vectors,
+        embedder=app.state.embedder,
+    )
     await processor.setup()
 
     # Wire mystery pipeline into article processor
@@ -135,4 +144,10 @@ async def shutdown():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "1.0.0"}
+    checks = {
+        "postgres": "ok" if getattr(app.state, "postgres", None) and app.state.postgres._pool else "error",
+        "clickhouse": "ok" if getattr(app.state, "clickhouse", None) and app.state.clickhouse._client else "error",
+        "neo4j": "ok" if getattr(app.state, "neo4j", None) and app.state.neo4j._driver else "error",
+    }
+    overall = "ok" if all(v == "ok" for v in checks.values()) else "degraded"
+    return {"status": overall, "version": "1.0.0", "checks": checks}

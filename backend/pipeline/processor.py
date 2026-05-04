@@ -46,35 +46,43 @@ class ArticleProcessor:
         self._vectors: Optional[VectorStore] = None
         self._embedder: Optional[EmbeddingService] = None
 
+    def inject_shared(self, pg, ch, neo4j, vectors, embedder):
+        """Accept already-connected clients from app.state to avoid duplicate connections."""
+        self._pg = pg
+        self._ch = ch
+        self._neo4j = neo4j
+        self._vectors = vectors
+        self._embedder = embedder
+
     async def setup(self):
         await self._dedup.setup()
         await self._trends.setup()
 
-        self._pg = PostgresClient()
-        await self._pg.connect()
+        if self._pg is None:
+            self._pg = PostgresClient()
+            await self._pg.connect()
 
-        self._ch = ClickHouseClient()
-        await self._ch.connect()
+        if self._ch is None:
+            self._ch = ClickHouseClient()
+            await self._ch.connect()
 
-        self._neo4j = Neo4jClient()
-        await self._neo4j.connect()
+        if self._neo4j is None:
+            self._neo4j = Neo4jClient()
+            await self._neo4j.connect()
 
         self._s3 = S3Client()
-        self._vectors = VectorStore()
-        await self._vectors.setup()
 
-        self._embedder = EmbeddingService()
+        if self._vectors is None:
+            self._vectors = VectorStore()
+            await self._vectors.setup()
+
+        if self._embedder is None:
+            self._embedder = EmbeddingService()
         logger.info("ArticleProcessor fully initialized")
 
     async def teardown(self):
         await self._dedup.teardown()
         await self._trends.teardown()
-        if self._pg:
-            await self._pg.disconnect()
-        if self._neo4j:
-            await self._neo4j.disconnect()
-        if self._vectors:
-            await self._vectors.teardown()
 
     async def process(self, raw: Dict):
         try:

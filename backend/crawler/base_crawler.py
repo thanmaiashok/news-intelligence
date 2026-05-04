@@ -45,7 +45,13 @@ class RobotsTxtCache:
         self._cache: Dict[str, tuple] = {}
         self._ttl = ttl
 
-    def can_fetch(self, url: str, user_agent: str = "*") -> bool:
+    def _fetch_robots(self, base: str) -> RobotFileParser:
+        rp = RobotFileParser()
+        rp.set_url(f"{base}/robots.txt")
+        rp.read()
+        return rp
+
+    async def can_fetch_async(self, url: str, user_agent: str = "*") -> bool:
         parsed = urlparse(url)
         base = f"{parsed.scheme}://{parsed.netloc}"
         now = time.time()
@@ -56,13 +62,12 @@ class RobotsTxtCache:
                 return parser.can_fetch(user_agent, url)
 
         try:
-            rp = RobotFileParser()
-            rp.set_url(f"{base}/robots.txt")
-            rp.read()
+            loop = asyncio.get_event_loop()
+            rp = await loop.run_in_executor(None, self._fetch_robots, base)
             self._cache[base] = (rp, now)
             return rp.can_fetch(user_agent, url)
         except Exception:
-            return True  # allow if robots.txt unreachable
+            return True
 
 
 robots_cache = RobotsTxtCache()
@@ -79,11 +84,17 @@ class BaseCrawler(ABC):
         self._error_count = 0
 
     async def setup(self):
+        try:
+            import aiodns
+            resolver = aiohttp.AsyncResolver()
+        except ImportError:
+            resolver = aiohttp.ThreadedResolver()
         connector = aiohttp.TCPConnector(
             limit=100,
             limit_per_host=10,
             ttl_dns_cache=300,
             ssl=False,
+            resolver=resolver,
         )
         timeout = aiohttp.ClientTimeout(total=settings.CRAWL_TIMEOUT_SECONDS)
         self._session = aiohttp.ClientSession(
@@ -113,7 +124,7 @@ class BaseCrawler(ABC):
         return result is None  # None means key already existed
 
     async def _fetch(self, url: str, headers: Optional[Dict] = None) -> Optional[str]:
-        if not robots_cache.can_fetch(url):
+        if not await robots_cache.can_fetch_async(url):
             logger.debug("robots.txt block: %s", url)
             return None
 

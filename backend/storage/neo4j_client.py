@@ -8,6 +8,19 @@ from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _safe_props(props: dict) -> dict:
+    """Serialize Neo4j temporal types to strings so JSON encoding works."""
+    out = {}
+    for k, v in props.items():
+        if hasattr(v, "isoformat"):
+            out[k] = v.isoformat()
+        elif hasattr(v, "__class__") and "neo4j" in type(v).__module__:
+            out[k] = str(v)
+        else:
+            out[k] = v
+    return out
+
 INIT_CONSTRAINTS = [
     "CREATE CONSTRAINT article_hash IF NOT EXISTS FOR (a:Article) REQUIRE a.content_hash IS UNIQUE",
     "CREATE CONSTRAINT source_name IF NOT EXISTS FOR (s:Source) REQUIRE s.name IS UNIQUE",
@@ -210,27 +223,37 @@ class Neo4jClient:
                     limit=limit,
                 )
 
+            from neo4j.graph import Node, Relationship
+
             nodes = {}
             links = []
             async for record in result:
-                for key in record.keys():
-                    val = record[key]
-                    if hasattr(val, "id"):
-                        node_id = str(val.id)
-                        if node_id not in nodes:
-                            labels = list(val.labels) if hasattr(val, "labels") else []
-                            nodes[node_id] = {
-                                "id": node_id,
-                                "label": labels[0] if labels else "Node",
-                                "properties": dict(val),
-                            }
-                    elif hasattr(val, "type"):
+                for val in record.values():
+                    if isinstance(val, Relationship):
                         links.append({
-                            "source": str(val.start_node.id),
-                            "target": str(val.end_node.id),
+                            "source": str(val.start_node.element_id),
+                            "target": str(val.end_node.element_id),
                             "type": val.type,
-                            "properties": dict(val),
+                            "properties": {},
                         })
+                        for n in (val.start_node, val.end_node):
+                            nid = str(n.element_id)
+                            if nid not in nodes:
+                                labels = list(n.labels)
+                                nodes[nid] = {
+                                    "id": nid,
+                                    "label": labels[0] if labels else "Node",
+                                    "properties": _safe_props(dict(n)),
+                                }
+                    elif isinstance(val, Node):
+                        nid = str(val.element_id)
+                        if nid not in nodes:
+                            labels = list(val.labels)
+                            nodes[nid] = {
+                                "id": nid,
+                                "label": labels[0] if labels else "Node",
+                                "properties": _safe_props(dict(val)),
+                            }
 
             return {"nodes": list(nodes.values()), "links": links}
 

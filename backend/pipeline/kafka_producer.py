@@ -32,7 +32,6 @@ class NewsKafkaProducer:
             linger_ms=10,
             acks="all",
             enable_idempotence=True,
-            max_in_flight_requests_per_connection=5,
         )
         await self._producer.start()
         logger.info("Kafka producer started")

@@ -66,7 +66,7 @@ class VectorStore:
         self._index.add_with_ids(vec, np.array([int_id], dtype="int64"))
         self._metadata[int_id] = metadata
 
-        if self._next_id % 1000 == 0:
+        if self._next_id % 100 == 0:
             self._persist_faiss()
 
     def _persist_faiss(self):
