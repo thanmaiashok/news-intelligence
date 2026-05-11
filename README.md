@@ -1,6 +1,56 @@
-# Global News Intelligence System
+# News Intelligence System
 
-Production-grade distributed news crawler, processing pipeline, and analytics dashboard.
+> Production-grade distributed news crawler, real-time processing pipeline, and AI-powered analytics dashboard.
+
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?logo=fastapi)
+![Kafka](https://img.shields.io/badge/Apache_Kafka-7.6-231F20?logo=apache-kafka)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red)
+
+---
+
+## What Is This?
+
+A self-hosted news intelligence platform that crawls dozens of sources, processes articles through an NLP pipeline, and surfaces insights via an interactive dashboard — all running on your own hardware.
+
+**Sources:** RSS feeds, Reddit, Bluesky, Mastodon, Hacker News, GDELT, web pages (static + JS)  
+**AI:** Deduplication, multi-label classification, sentiment (RoBERTa), NER (spaCy), RAG queries, LLM insights  
+**Storage:** PostgreSQL · ClickHouse · Neo4j · Redis · FAISS · S3/MinIO  
+**Dashboard:** 7 live pages — Overview, Feed, Trends, Sentiment, Graph, Leads, Control
+
+---
+
+## One-Step Setup
+
+```bash
+git clone https://github.com/thanmaiashok/news-intelligence.git
+cd news-intelligence
+./start.sh
+```
+
+That's it. `start.sh` handles everything:
+- Copies `.env.example` → `.env` if missing
+- Starts all infrastructure (Kafka, Postgres, ClickHouse, Neo4j, Redis, MinIO) via Docker
+- Creates Python venv, installs deps, downloads spaCy model + Playwright
+- Pre-warms the embedding model
+- Starts FastAPI backend + Next.js frontend
+
+**Prerequisites:** Docker Desktop · Python 3.11+ · Node.js 20+
+
+Open your browser:
+
+| Service | URL |
+|---------|-----|
+| Dashboard | http://localhost:3000 |
+| API | http://localhost:8001 |
+| API Docs | http://localhost:8001/docs |
+| Kafka UI | http://localhost:8080 |
+| Neo4j Browser | http://localhost:7474 |
+| MinIO Console | http://localhost:9001 |
+
+Stop everything: `./kill.sh`
 
 ---
 
@@ -8,7 +58,7 @@ Production-grade distributed news crawler, processing pipeline, and analytics da
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       GLOBAL NEWS INTELLIGENCE SYSTEM                        │
+│                       NEWS INTELLIGENCE SYSTEM                               │
 ├──────────────┬──────────────────┬─────────────────┬────────────────────────┤
 │  SOURCES     │  CRAWLER LAYER   │   KAFKA TOPICS  │  PROCESSING PIPELINE   │
 │              │                  │                 │                        │
@@ -16,15 +66,15 @@ Production-grade distributed news crawler, processing pipeline, and analytics da
 │  Web Pages   │  StaticWeb       │                 │  (SimHash + MinHash)   │
 │  JS Sites    │  Playwright      │                 │  Multi-label Classify  │
 │  Reddit      │  RedditCrawler   │  news.processed │  Sentiment (RoBERTa)   │
-│  (ext. API)  │  TwitterCrawler  │                 │  NER (spaCy)           │
-│              │                  │  news.trends    │  Trend Detection       │
-│              │  Scheduler       │                 │                        │
-│              │  (every 5min)    │                 │                        │
+│  Bluesky     │  BlueskyCrawler  │                 │  NER (spaCy)           │
+│  Mastodon    │  MastodonCrawler │  news.trends    │  Trend Detection       │
+│  HN / GDELT  │  Scheduler       │                 │                        │
+│              │  (every 2min)    │                 │                        │
 ├──────────────┴──────────────────┴─────────────────┴────────────────────────┤
 │                              STORAGE LAYER                                   │
 │                                                                              │
 │  S3/MinIO         PostgreSQL          ClickHouse         Neo4j              │
-│  (raw JSON)       (articles,          (analytics,        (graph:            │
+│  (raw JSON)       (articles,          (analytics,        (knowledge graph:  │
 │                    structured)         time-series)       Article→Topic     │
 │                                                           Article→Entity    │
 │  FAISS/Pinecone   Redis                                   Entity→Entity)    │
@@ -35,6 +85,7 @@ Production-grade distributed news crawler, processing pipeline, and analytics da
 │                                                                              │
 │  EmbeddingService          RAGEngine              InsightsGenerator         │
 │  (sentence-transformers)   (FAISS + GPT-4o-mini)  (LLM + rule-based)       │
+│                            Mystery Engine         Anomaly Detector          │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                             FASTAPI BACKEND                                  │
 │                                                                              │
@@ -48,149 +99,87 @@ Production-grade distributed news crawler, processing pipeline, and analytics da
 
 ---
 
-## Folder Structure
+## Project Structure
 
 ```
 news-intelligence/
 ├── backend/
-│   ├── api/           FastAPI app + REST routes + WebSocket
-│   ├── ai/            Embeddings, RAG, Insights generator
-│   ├── config/        Pydantic settings
-│   ├── crawler/       RSS, Web (Playwright), Reddit crawlers + Scheduler
-│   ├── pipeline/      Kafka producer/consumer, Dedup, Classify, Sentiment, NER, Trends
-│   └── storage/       PostgreSQL, ClickHouse, Neo4j, S3, VectorStore clients
+│   ├── ai/            Embeddings, RAG engine, insights generator, mystery pipeline
+│   ├── api/           FastAPI app, REST routes, WebSocket bridge
+│   ├── config/        Pydantic settings (env-driven)
+│   ├── crawler/       RSS, web (Playwright), Reddit, Bluesky, Mastodon, HN, GDELT
+│   ├── mystery/       Anomaly detection, LLM reasoning, pattern engine
+│   ├── pipeline/      Kafka producer/consumer, dedup, classify, sentiment, NER, trends
+│   ├── storage/       PostgreSQL, ClickHouse, Neo4j, S3, vector store clients
+│   └── requirements.txt
 ├── frontend/
 │   └── src/
-│       ├── app/       7 Next.js pages (overview, feed, trends, sentiment, graph, leads, control)
-│       ├── components/ UI components per page
+│       ├── app/       7 Next.js pages
+│       ├── components/ Per-page UI components
 │       ├── hooks/     useWebSocket, usePolling
 │       ├── lib/       API client
 │       └── types/     TypeScript interfaces
 ├── deployment/
-│   ├── docker/        docker-compose.yml (all services)
-│   └── k8s/           Namespace, Deployments, HPA configs
-└── .env.example
+│   ├── docker/        docker-compose.yml (full infrastructure stack)
+│   ├── k8s/           Kubernetes manifests (Namespace, Deployments, HPA)
+│   └── scripts/       DB init SQL + Neo4j Cypher
+├── .env.example       All config vars with comments
+├── start.sh           One-command local startup
+└── kill.sh            Graceful shutdown
 ```
 
 ---
 
-## Quick Start (Local / VS Code)
+## Configuration
 
-### Prerequisites
-- Docker Desktop
-- Python 3.11+
-- Node.js 20+
+Copy `.env.example` → `.env` and fill in your values. All API keys are **optional** — the system works without them using free/local alternatives.
 
-### Step 1 — Start infrastructure
-
-```bash
-cd deployment/docker
-docker compose up -d zookeeper kafka postgres clickhouse neo4j redis minio
-```
-
-Wait ~30s for services to be ready. Check:
-- Kafka UI: http://localhost:8080
-- Neo4j Browser: http://localhost:7474 (neo4j / newspass123)
-- MinIO Console: http://localhost:9001 (minioadmin / minioadmin)
-
-### Step 2 — Backend setup
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-
-pip install -r requirements.txt
-
-# Install spaCy model
-python -m spacy download en_core_web_sm
-
-# Install Playwright browsers
-playwright install chromium
-```
-
-Copy `.env.example` → `.env` and fill in your API keys (all optional for basic run).
-
-```bash
-cp ../.env.example ../.env
-```
-
-### Step 3 — Run backend API
-
-```bash
-cd backend
-uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8001
-```
-
-API docs: http://localhost:8001/docs
-
-### Step 4 — Run crawler scheduler
-
-In a separate terminal:
-```bash
-cd backend
-python -m backend.crawler.scheduler
-```
-
-### Step 5 — Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Dashboard: http://localhost:3000
+| Variable | Required | Default | Purpose |
+|----------|----------|---------|---------|
+| `POSTGRES_PASSWORD` | No | `newspass` | PostgreSQL auth |
+| `NEO4J_PASSWORD` | No | `newspass123` | Neo4j auth |
+| `OPENAI_API_KEY` | No | — | RAG queries + AI insights |
+| `REDDIT_CLIENT_ID` | No | — | Reddit crawling |
+| `TWITTER_BEARER_TOKEN` | No | — | Twitter/X crawling |
+| `PINECONE_API_KEY` | No | — | Cloud vectors (falls back to FAISS) |
 
 ---
 
-## Docker (full stack)
+## Optional API Keys
 
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-
-cd deployment/docker
-docker compose up --build
-```
-
-- Dashboard: http://localhost:3000
-- API: http://localhost:8001
-- Kafka UI: http://localhost:8080
-- Neo4j: http://localhost:7474
+| Service | Where to get | What it unlocks |
+|---------|-------------|-----------------|
+| OpenAI | platform.openai.com | RAG query answering + AI insights |
+| Reddit | reddit.com/prefs/apps | Reddit news crawling |
+| Twitter Bearer | developer.twitter.com | Twitter/X feed crawling |
+| Pinecone | pinecone.io | Cloud vector search (vs local FAISS) |
 
 ---
 
 ## Home Server / Tailscale
 
-No public domain is required. Put the server and your devices on the same
-Tailscale network, then start the project on the server:
+Run on a home server and access from any device on your Tailscale network:
 
 ```bash
-./start.sh
+./start.sh   # auto-detects Tailscale IP
 ```
 
-`start.sh` binds the API and frontend to `0.0.0.0` and auto-detects the
-server's Tailscale IPv4 address when `tailscale` is installed. The startup
-summary prints the URLs to open from your other devices, usually:
-
-```text
-Dashboard: http://100.x.x.x:3000
-API Docs:  http://100.x.x.x:8001/docs
-```
-
-To force a specific hostname or MagicDNS name:
+Or force a specific host:
 
 ```bash
-SERVER_HOST=spoosh-Aspire-A715-42G ./start.sh
+SERVER_HOST=my-server-hostname ./start.sh
 ```
 
-For Docker-only frontend builds, set browser-facing URLs before building:
+Startup output prints the exact URLs to open from other devices.
+
+---
+
+## Full Docker Stack
 
 ```bash
-export NEXT_PUBLIC_API_URL=http://100.x.x.x:8001/api/v1
-export NEXT_PUBLIC_WS_URL=ws://100.x.x.x:8001/ws/feed
-docker compose -f deployment/docker/docker-compose.yml up --build
+cp .env.example .env
+cd deployment/docker
+docker compose up --build
 ```
 
 ---
@@ -204,36 +193,41 @@ docker build -t your-registry/news-frontend:latest ./frontend
 docker push your-registry/news-api:latest
 docker push your-registry/news-frontend:latest
 
-# Create secret
-kubectl create secret generic news-secrets \
-  --from-env-file=.env \
-  -n news-intelligence
-
 # Deploy
-kubectl apply -f deployment/k8s/namespace.yaml
-kubectl apply -f deployment/k8s/crawler-deployment.yaml
-kubectl apply -f deployment/k8s/api-deployment.yaml
-kubectl apply -f deployment/k8s/hpa.yaml
+kubectl create secret generic news-secrets --from-env-file=.env -n news-intelligence
+kubectl apply -f deployment/k8s/
 ```
 
 ---
 
-## Optional API Keys
+## Tech Stack
 
-| Service | Where to get | What it unlocks |
-|---------|-------------|-----------------|
-| OpenAI | platform.openai.com | RAG query + AI insights |
-| Reddit | reddit.com/prefs/apps | Reddit news crawling |
-| Twitter Bearer | developer.twitter.com | Twitter/X crawling |
-| Pinecone | pinecone.io | Cloud vector search (vs local FAISS) |
+| Layer | Technology |
+|-------|-----------|
+| Backend API | FastAPI + uvicorn (asyncio) |
+| Frontend | Next.js 14 + Tailwind CSS |
+| Message Queue | Apache Kafka |
+| Databases | PostgreSQL · ClickHouse · Neo4j |
+| Cache | Redis |
+| Object Storage | MinIO (S3-compatible) |
+| Vector Search | FAISS (local) or Pinecone (cloud) |
+| NLP | spaCy · HuggingFace Transformers · sentence-transformers |
+| Deduplication | SimHash + MinHash (datasketch) |
+| Containerization | Docker Compose · Kubernetes |
 
 ---
 
-## VS Code Extensions (Recommended)
+## Contributing
 
-- Python (ms-python.python)
-- Pylance
-- ESLint
-- Prettier
-- Docker
-- Thunder Client (API testing)
+Contributions welcome. Open an issue first for large changes.
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes
+4. Push and open a PR
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE)
