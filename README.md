@@ -1,20 +1,12 @@
-# News Intelligence System
-
 <p align="center"><img src="docs/flow.svg" alt="Animated News Intelligence pipeline: Crawl → Queue → Dedupe → Analyze → Store → Dashboard" width="100%"/></p>
 <p align="center"><sub>10-second tour: Crawl → Queue → Dedupe → Analyze → Store → Dashboard</sub></p>
 
-> Production-grade distributed news crawler, real-time processing pipeline, and AI-powered analytics dashboard.
+<p align="center"><img src="docs/mc/intro.svg" width="100%" alt="Production-grade distributed news crawler, real-time processing pipeline and AI-powered analytics dashboard, self-hosted on your own hardware."/></p>
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?logo=fastapi)
-![Kafka](https://img.shields.io/badge/Apache_Kafka-7.6-231F20?logo=apache-kafka)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red)
+<p align="center"><img src="docs/mc/features.svg" width="100%" alt="Key features"/></p>
 
----
-
-## What Is This?
+<a id="what-is-this"></a>
+<h2><img src="docs/mc/h2-what-is-this.svg" width="100%" alt="What Is This?"/></h2>
 
 A self-hosted news intelligence platform that crawls dozens of sources, processes articles through an NLP pipeline, and surfaces insights via an interactive dashboard — all running on your own hardware.
 
@@ -23,9 +15,8 @@ A self-hosted news intelligence platform that crawls dozens of sources, processe
 **Storage:** PostgreSQL · ClickHouse · Neo4j · Redis · FAISS · S3/MinIO  
 **Dashboard:** 7 live pages — Overview, Feed, Trends, Sentiment, Graph, Leads, Control
 
----
-
-## One-Step Setup
+<a id="one-step-setup"></a>
+<h2><img src="docs/mc/h2-one-step-setup.svg" width="100%" alt="One-Step Setup"/></h2>
 
 ```bash
 git clone https://github.com/thanmaiashok/news-intelligence.git
@@ -55,9 +46,8 @@ Open your browser:
 
 Stop everything: `./kill.sh`
 
----
-
-## Architecture
+<a id="architecture"></a>
+<h2><img src="docs/mc/h2-architecture.svg" width="100%" alt="Architecture"/></h2>
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -100,9 +90,8 @@ Stop everything: `./kill.sh`
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## Project Structure
+<a id="project-structure"></a>
+<h2><img src="docs/mc/h2-project-structure.svg" width="100%" alt="Project Structure"/></h2>
 
 ```
 news-intelligence/
@@ -131,9 +120,8 @@ news-intelligence/
 └── kill.sh            Graceful shutdown
 ```
 
----
-
-## Configuration
+<a id="configuration"></a>
+<h2><img src="docs/mc/h2-configuration.svg" width="100%" alt="Configuration"/></h2>
 
 Copy `.env.example` → `.env` and fill in your values. All API keys are **optional** — the system works without them using free/local alternatives.
 
@@ -146,9 +134,8 @@ Copy `.env.example` → `.env` and fill in your values. All API keys are **optio
 | `TWITTER_BEARER_TOKEN` | No | — | Twitter/X crawling |
 | `PINECONE_API_KEY` | No | — | Cloud vectors (falls back to FAISS) |
 
----
-
-## Optional API Keys
+<a id="optional-api-keys"></a>
+<h2><img src="docs/mc/h2-optional-api-keys.svg" width="100%" alt="Optional API Keys"/></h2>
 
 | Service | Where to get | What it unlocks |
 |---------|-------------|-----------------|
@@ -157,9 +144,8 @@ Copy `.env.example` → `.env` and fill in your values. All API keys are **optio
 | Twitter Bearer | developer.twitter.com | Twitter/X feed crawling |
 | Pinecone | pinecone.io | Cloud vector search (vs local FAISS) |
 
----
-
-## Home Server / Tailscale
+<a id="home-server--tailscale"></a>
+<h2><img src="docs/mc/h2-home-server-tailscale.svg" width="100%" alt="Home Server / Tailscale"/></h2>
 
 Run on a home server and access from any device on your Tailscale network:
 
@@ -175,9 +161,8 @@ SERVER_HOST=my-server-hostname ./start.sh
 
 Startup output prints the exact URLs to open from other devices.
 
----
-
-## Full Docker Stack
+<a id="full-docker-stack"></a>
+<h2><img src="docs/mc/h2-full-docker-stack.svg" width="100%" alt="Full Docker Stack"/></h2>
 
 ```bash
 cp .env.example .env
@@ -185,9 +170,8 @@ cd deployment/docker
 docker compose up --build
 ```
 
----
-
-## Kubernetes
+<a id="kubernetes"></a>
+<h2><img src="docs/mc/h2-kubernetes.svg" width="100%" alt="Kubernetes"/></h2>
 
 ```bash
 # Build and push images
@@ -201,9 +185,8 @@ kubectl create secret generic news-secrets --from-env-file=.env -n news-intellig
 kubectl apply -f deployment/k8s/
 ```
 
----
-
-## Tech Stack
+<a id="tech-stack"></a>
+<h2><img src="docs/mc/h2-tech-stack.svg" width="100%" alt="Tech Stack"/></h2>
 
 | Layer | Technology |
 |-------|-----------|
@@ -218,9 +201,8 @@ kubectl apply -f deployment/k8s/
 | Deduplication | SimHash + MinHash (datasketch) |
 | Containerization | Docker Compose · Kubernetes |
 
----
-
-## Contributing
+<a id="contributing"></a>
+<h2><img src="docs/mc/h2-contributing.svg" width="100%" alt="Contributing"/></h2>
 
 Contributions welcome. Open an issue first for large changes.
 
@@ -229,8 +211,9 @@ Contributions welcome. Open an issue first for large changes.
 3. Commit your changes
 4. Push and open a PR
 
----
-
-## License
+<a id="license"></a>
+<h2><img src="docs/mc/h2-license.svg" width="100%" alt="License"/></h2>
 
 MIT — see [LICENSE](LICENSE)
+
+<p align="center"><a href="https://github.com/thanmaiashok"><img src="docs/mc/footer.svg" width="100%" alt="Built by Thanmai A, founder of FoxynAI"/></a></p>
