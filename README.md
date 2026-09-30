@@ -1,5 +1,8 @@
 # News Intelligence System
 
+<p align="center"><img src="docs/flow.svg" alt="Animated News Intelligence pipeline: Crawl → Queue → Dedupe → Analyze → Store → Dashboard" width="100%"/></p>
+<p align="center"><sub>10-second tour: Crawl → Queue → Dedupe → Analyze → Store → Dashboard</sub></p>
+
 > Production-grade distributed news crawler, real-time processing pipeline, and AI-powered analytics dashboard.
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
