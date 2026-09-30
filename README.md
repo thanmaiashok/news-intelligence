@@ -14,10 +14,7 @@
 <a id="one-step-setup"></a>
 <h2><img src="docs/px3/h2-one-step-setup.svg" width="100%" alt="One-Step Setup"/></h2>
 
-<p align="center"><img src="docs/px3/c-01.svg" width="100%" alt="code: git clone https://github.com/thanmaiashok/news-intelligence.git cd news-intelligence ./start.sh "/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-bash.svg" width="100%" alt="bash code"/></p>
 
 ```bash
 git clone https://github.com/thanmaiashok/news-intelligence.git
@@ -25,17 +22,12 @@ cd news-intelligence
 ./start.sh
 ```
 
-</details>
-
 <p align="center"><img src="docs/px3/t-02.svg" width="100%" alt="That&#x27;s it. start.sh handles everything: Copies .env.example -&gt; .env if missing Starts all infrastructure (Kafka, Postgres, ClickHouse, Neo4j, Redis, MinIO) via Docker Creates Python venv, installs deps, downloads spaCy model + Playwright Pre-warms the embedding model Starts FastAPI backend + Next.js frontend Prerequisites: Docker Desktop | Python 3.11+ | Node.js 20+ Open your browser: Service | URL Dashboard | http://localhost:3000 API | http://localhost:8001 API Docs | http://localhost:8001/docs Kafka UI | http://localhost:8080 Neo4j Browser | http://localhost:7474 MinIO Console | http://localhost:9001 Stop everything: ./kill.sh"/></p>
 
 <a id="architecture"></a>
 <h2><img src="docs/px3/h2-architecture.svg" width="100%" alt="Architecture"/></h2>
 
-<p align="center"><img src="docs/px3/c-02.svg" width="100%" alt="code: ┌─────────────────────────────────────────────────────────────────────────────┐ │ NEWS INTELLIGENCE SYSTEM │ ├──────────────┬──────────────────┬────────────────"/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-code.svg" width="100%" alt="code code"/></p>
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -78,15 +70,10 @@ cd news-intelligence
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-</details>
-
 <a id="project-structure"></a>
 <h2><img src="docs/px3/h2-project-structure.svg" width="100%" alt="Project Structure"/></h2>
 
-<p align="center"><img src="docs/px3/c-03.svg" width="100%" alt="code: news-intelligence/ ├── backend/ │ ├── ai/ Embeddings, RAG engine, insights generator, mystery pipeline │ ├── api/ FastAPI app, REST routes, WebSocket bridge │ ├"/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-code.svg" width="100%" alt="code code"/></p>
 
 ```
 news-intelligence/
@@ -115,8 +102,6 @@ news-intelligence/
 └── kill.sh            Graceful shutdown
 ```
 
-</details>
-
 <a id="configuration"></a>
 <h2><img src="docs/px3/h2-configuration.svg" width="100%" alt="Configuration"/></h2>
 
@@ -132,39 +117,26 @@ news-intelligence/
 
 <p align="center"><img src="docs/px3/t-05.svg" width="100%" alt="Run on a home server and access from any device on your Tailscale network:"/></p>
 
-<p align="center"><img src="docs/px3/c-04.svg" width="100%" alt="code: ./start.sh # auto-detects Tailscale IP "/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-bash.svg" width="100%" alt="bash code"/></p>
 
 ```bash
 ./start.sh   # auto-detects Tailscale IP
 ```
 
-</details>
-
 <p align="center"><img src="docs/px3/t-06.svg" width="100%" alt="Or force a specific host:"/></p>
 
-<p align="center"><img src="docs/px3/c-05.svg" width="100%" alt="code: SERVER_HOST=my-server-hostname ./start.sh "/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-bash.svg" width="100%" alt="bash code"/></p>
 
 ```bash
 SERVER_HOST=my-server-hostname ./start.sh
 ```
-
-</details>
 
 <p align="center"><img src="docs/px3/t-07.svg" width="100%" alt="Startup output prints the exact URLs to open from other devices."/></p>
 
 <a id="full-docker-stack"></a>
 <h2><img src="docs/px3/h2-full-docker-stack.svg" width="100%" alt="Full Docker Stack"/></h2>
 
-<p align="center"><img src="docs/px3/c-06.svg" width="100%" alt="code: cp .env.example .env cd deployment/docker docker compose up --build "/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-bash.svg" width="100%" alt="bash code"/></p>
 
 ```bash
 cp .env.example .env
@@ -172,15 +144,10 @@ cd deployment/docker
 docker compose up --build
 ```
 
-</details>
-
 <a id="kubernetes"></a>
 <h2><img src="docs/px3/h2-kubernetes.svg" width="100%" alt="Kubernetes"/></h2>
 
-<p align="center"><img src="docs/px3/c-07.svg" width="100%" alt="code: # Build and push images docker build -t your-registry/news-api:latest ./backend docker build -t your-registry/news-frontend:latest ./frontend docker push your-r"/></p>
-
-<details>
-<summary><img src="docs/px3/copy-btn.svg" height="40" alt="Copy code: click to open"/></summary>
+<p align="center"><img src="docs/px3/bar-bash.svg" width="100%" alt="bash code"/></p>
 
 ```bash
 # Build and push images
@@ -193,8 +160,6 @@ docker push your-registry/news-frontend:latest
 kubectl create secret generic news-secrets --from-env-file=.env -n news-intelligence
 kubectl apply -f deployment/k8s/
 ```
-
-</details>
 
 <a id="tech-stack"></a>
 <h2><img src="docs/px3/h2-tech-stack.svg" width="100%" alt="Tech Stack"/></h2>
