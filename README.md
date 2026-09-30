@@ -1,4 +1,5 @@
 <p align="center"><img src="docs/flow.svg" alt="Animated News Intelligence pipeline: Crawl → Queue → Dedupe → Analyze → Store → Dashboard" width="100%"/></p>
+
 <p align="center"><sub>10-second tour: Crawl → Queue → Dedupe → Analyze → Store → Dashboard</sub></p>
 
 <p align="center"><img src="docs/mc/intro.svg" width="100%" alt="Production-grade distributed news crawler, real-time processing pipeline and AI-powered analytics dashboard, self-hosted on your own hardware."/></p>
